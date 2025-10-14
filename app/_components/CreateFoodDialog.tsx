@@ -7,19 +7,38 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
+import { CategoryType } from "../products/page";
 
 export const CreateFoodDialog = () => {
   const [image, setImage] = useState<File | undefined>();
   const [name, setName] = useState<string>("");
   const [price, setPrice] = useState<number>(0);
   const [ingredients, setIngredients] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [categories, setCategories] = useState<CategoryType[]>([]);
+
+  const getCategories = async () => {
+    const response = await fetch("http://localhost:4000/api/categories");
+    const data = await response.json();
+    setCategories(data.data);
+  };
+
+  useEffect(() => {
+    getCategories();
+  }, []);
 
   const addFoodHandler = async () => {
-    if (!name || !price || !image || !ingredients || !category) {
+    if (!name || !price || !image || !ingredients || !selectedCategory) {
       alert("All fields are required");
       return;
     }
@@ -30,7 +49,7 @@ export const CreateFoodDialog = () => {
     form.append("price", String(price));
     form.append("image", image); // File object
     form.append("ingredients", ingredients);
-    form.append("category", category);
+    form.append("categoryId", selectedCategory);
 
     try {
       const response = await fetch("http://localhost:4000/api/food", {
@@ -45,7 +64,7 @@ export const CreateFoodDialog = () => {
         setPrice(0);
         setImage(undefined);
         setIngredients("");
-        setCategory("");
+        setSelectedCategory(null);
       } else {
         alert(data.error || "Failed to create food");
       }
@@ -67,9 +86,7 @@ export const CreateFoodDialog = () => {
   const ingredientsChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
     setIngredients(e.target.value);
   };
-  const categoryChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    setCategory(e.target.value);
-  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -115,13 +132,22 @@ export const CreateFoodDialog = () => {
             />
           </div>
           <div className="grid gap-3">
-            <Label htmlFor="category">Category</Label>
-            <Input
-              id="category"
-              name="category"
-              value={category}
-              onChange={categoryChangeHandler}
-            />
+            {categories.length > 0 && (
+              <Select onValueChange={(value) => setSelectedCategory(value)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => {
+                    return (
+                      <SelectItem key={category._id} value={category._id}>
+                        {category.name}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            )}
           </div>
           <Button
             type="submit"
