@@ -17,28 +17,27 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ChangeEvent, useEffect, useState } from "react";
-import { CategoryType } from "../products/page";
 
-export const CreateFoodDialog = () => {
+export type CategoryType = {
+  name: string;
+  _id: string;
+};
+
+export const CreateFoodDialog = ({
+  categoryId,
+  refetchFoods,
+}: {
+  categoryId: string;
+  refetchFoods: () => Promise<void>;
+}) => {
   const [image, setImage] = useState<File | undefined>();
   const [name, setName] = useState<string>("");
   const [price, setPrice] = useState<number>(0);
   const [ingredients, setIngredients] = useState<string>("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [categories, setCategories] = useState<CategoryType[]>([]);
-
-  const getCategories = async () => {
-    const response = await fetch("http://localhost:4000/api/categories");
-    const data = await response.json();
-    setCategories(data.data);
-  };
-
-  useEffect(() => {
-    getCategories();
-  }, []);
+  const [open, setOpen] = useState<boolean>(closed);
 
   const addFoodHandler = async () => {
-    if (!name || !price || !image || !ingredients || !selectedCategory) {
+    if (!name || !price || !image || !ingredients) {
       alert("All fields are required");
       return;
     }
@@ -49,7 +48,7 @@ export const CreateFoodDialog = () => {
     form.append("price", String(price));
     form.append("image", image); // File object
     form.append("ingredients", ingredients);
-    form.append("categoryId", selectedCategory);
+    form.append("categoryId", categoryId);
 
     try {
       const response = await fetch("http://localhost:4000/api/food", {
@@ -59,12 +58,12 @@ export const CreateFoodDialog = () => {
 
       const data = await response.json();
       if (response.ok) {
-        alert("Food created successfully!");
+        await refetchFoods();
+        setOpen(false);
         setName("");
         setPrice(0);
         setImage(undefined);
         setIngredients("");
-        setSelectedCategory(null);
       } else {
         alert(data.error || "Failed to create food");
       }
@@ -88,9 +87,14 @@ export const CreateFoodDialog = () => {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline">Open Dialog</Button>
+        <div
+          onClick={() => setOpen(true)}
+          className="cursor-pointer hover:bg-gray-200 rounded-lg w-40 h-40 border border-dashed border-2 flex justify-center items-center"
+        >
+          +
+        </div>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -102,7 +106,6 @@ export const CreateFoodDialog = () => {
             <Input
               id="name"
               name="name"
-              defaultValue={name}
               value={name}
               onChange={nameChangeHandler}
             />
@@ -113,7 +116,6 @@ export const CreateFoodDialog = () => {
               id="price"
               name="price"
               type="number"
-              defaultValue="0"
               value={price}
               onChange={priceChangeHandler}
             />
@@ -131,24 +133,7 @@ export const CreateFoodDialog = () => {
               onChange={ingredientsChangeHandler}
             />
           </div>
-          <div className="grid gap-3">
-            {categories.length > 0 && (
-              <Select onValueChange={(value) => setSelectedCategory(value)}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => {
-                    return (
-                      <SelectItem key={category._id} value={category._id}>
-                        {category.name}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
+
           <Button
             type="submit"
             size={"sm"}
