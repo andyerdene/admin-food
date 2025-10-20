@@ -1,3 +1,5 @@
+"use client";
 export const Header = () => {
-  return <div className="bg-blue-500 w-full h-16">Header</div>;
+  const userEmail = localStorage.getItem("userEmail");
+  return <div className="bg-blue-500 w-full h-16">{userEmail}</div>;
 };
