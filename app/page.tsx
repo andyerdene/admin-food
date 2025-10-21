@@ -1,37 +1,43 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
 import { AdminLayout } from "./_components/AdminLayout";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import { ChangeEvent, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { X } from "lucide-react";
 import { CategoryType, FoodType } from "@/lib/types";
 import { CategorizedFoods } from "./_components/CategorizedFoods";
+import { Categories } from "./_components/Categories";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
   const [categories, setCategories] = useState<CategoryType[]>([]);
-  const [newCategory, setNewCategory] = useState<string | undefined>();
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
+  const [categoryLoading, setCategoryLoading] = useState<boolean>(false);
+  const [foodLoading, setFoodLoading] = useState<boolean>(false);
   const [foods, setFoods] = useState<FoodType[]>([]);
+  const route = useRouter();
+  const email = localStorage.getItem("userEmail");
+  if (!email) {
+    route.push("/login");
+  }
 
   const getCategories = async () => {
+    setCategoryLoading(true);
     const result = await fetch("http://localhost:4000/api/categories");
     const responseData = await result.json();
     const { data } = responseData;
     setCategories(data);
+    setCategoryLoading(false);
   };
 
+  useEffect(() => {
+    console.log("hello categoru=>", categories.length);
+  }, [categories]);
+
   const getFoods = async () => {
+    setFoodLoading(true);
     const result = await fetch("http://localhost:4000/api/food");
     const responseData = await result.json();
     setFoods(responseData.data);
+    setFoodLoading(false);
   };
 
   useEffect(() => {
@@ -39,74 +45,21 @@ export default function Page() {
     getFoods();
   }, []);
 
-  const newCategoryNameChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    setNewCategory(e.target.value);
-  };
-  const createCategoryHandler = async () => {
-    await fetch("http://localhost:4000/api/categories", {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        newCategory,
-      }),
-    });
-    setModalOpen(false);
-    await getCategories();
-  };
-
-  const deleteCategoryHandler = async (category: string) => {
-    await fetch("http://localhost:4000/api/categories/delete", {
-      method: "POST",
-      mode: "no-cors",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(category),
-    });
-  };
-
   return (
     <AdminLayout>
       <div className="bg-gray-100 h-full">
-        <div className="flex gap-2">
-          {categories.map((category) => (
-            <div
-              className="flex items-center border-2 rounded-full p-2 py-0"
-              key={category._id}
-            >
-              {category.name}
-              <X
-                className="hover:bg-gray-400/20 w-4"
-                onClick={() => deleteCategoryHandler(category._id)}
+        {categoryLoading ? (
+          <div className="flex gap-2">
+            {[1, 2, 3].map((c) => (
+              <Skeleton
+                key={c}
+                className="flex items-center border-2 rounded-full p-2 py-0 h-7 w-25"
               />
-            </div>
-          ))}
-          <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-            <DialogTrigger asChild>
-              <Badge
-                onClick={() => setModalOpen(true)}
-                variant={"outline"}
-                className="cursor-pointer hover:bg-gray-500/20"
-              >
-                +
-              </Badge>
-            </DialogTrigger>
-            <DialogContent className="w-[463px] p-6">
-              <DialogHeader>
-                <DialogTitle>Are you absolutely sure?</DialogTitle>
-              </DialogHeader>
-              <Input
-                type="text"
-                placeholder="new category"
-                onChange={newCategoryNameChangeHandler}
-              />
-              <Button onClick={createCategoryHandler}>Create</Button>
-            </DialogContent>
-          </Dialog>
-        </div>
+            ))}
+          </div>
+        ) : (
+          <Categories categories={categories} getCategories={getCategories} />
+        )}
         {categories.map((category) => {
           return (
             <CategorizedFoods
