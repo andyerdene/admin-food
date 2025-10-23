@@ -17,7 +17,7 @@ const Page = () => {
         router.push("/");
       }
     }
-  }, [localStorage]);
+  }, []);
 
   const onLogin = async () => {
     const result = await fetch("http://localhost:4000/api/login", {

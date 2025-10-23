@@ -13,10 +13,16 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export const Header = () => {
-  const userEmail = localStorage.getItem("userEmail");
+  const [userEmail, setUserEmail] = useState<string | null>();
+
   const router = useRouter();
+
+  useEffect(() => {
+    if (localStorage) setUserEmail(localStorage.getItem("userEmail"));
+  }, []);
 
   const onLogout = () => {
     localStorage.removeItem("userEmail");
