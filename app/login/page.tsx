@@ -10,16 +10,14 @@ const Page = () => {
   const [email, setEmail] = useState<string>("");
   const router = useRouter();
 
-  const { foods, categories } = useData();
-  console.log(foods);
-  // useEffect(() => {
-  //   if (localStorage) {
-  //     const loggedInEmail = localStorage.getItem("userEmail");
-  //     if (loggedInEmail) {
-  //       router.push("/");
-  //     }
-  //   }
-  // }, []);
+  useEffect(() => {
+    if (localStorage) {
+      const loggedInEmail = localStorage.getItem("userEmail");
+      if (loggedInEmail) {
+        router.push("/");
+      }
+    }
+  }, []);
 
   const onLogin = async () => {
     const result = await fetch("http://localhost:4000/api/login", {
