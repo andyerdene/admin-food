@@ -1,5 +1,5 @@
 "use client";
-import "./globals.css";
+import { FoodProvider } from "../_providers/FoodProvider";
 
 export default function RootLayout({
   children,
@@ -8,7 +8,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <FoodProvider>{children}</FoodProvider>
+      </body>
     </html>
   );
 }

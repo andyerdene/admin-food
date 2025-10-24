@@ -3,21 +3,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { useData } from "../_providers/FoodProvider";
 
 const Page = () => {
   const [password, setPassword] = useState<string>("");
   const [email, setEmail] = useState<string>("");
-
   const router = useRouter();
 
-  useEffect(() => {
-    if (localStorage) {
-      const loggedInEmail = localStorage.getItem("userEmail");
-      if (loggedInEmail) {
-        router.push("/");
-      }
-    }
-  }, []);
+  const { foods, categories } = useData();
+  console.log(foods);
+  // useEffect(() => {
+  //   if (localStorage) {
+  //     const loggedInEmail = localStorage.getItem("userEmail");
+  //     if (loggedInEmail) {
+  //       router.push("/");
+  //     }
+  //   }
+  // }, []);
 
   const onLogin = async () => {
     const result = await fetch("http://localhost:4000/api/login", {

@@ -1,9 +1,9 @@
 "use client";
-import { AdminLayout } from "./_components/AdminLayout";
-import { CategorizedFoods } from "./_components/CategorizedFoods";
-import { Categories } from "./_components/Categories";
+import { AdminLayout } from "../_components/AdminLayout";
+import { CategorizedFoods } from "../_components/CategorizedFoods";
+import { Categories } from "../_components/Categories";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useFood } from "./_hooks/use-food";
+import { useFood } from "../_hooks/use-food";
 
 export default function Page() {
   const { loading, categories, foods, reFetchCategories, reFetchFoods } =
